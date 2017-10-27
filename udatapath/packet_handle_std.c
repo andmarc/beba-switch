@@ -445,13 +445,13 @@ packet_handle_std_validate(struct packet_handle_std *handle) {
     uint32_t state = 0;
     uint8_t condition[OFPSC_MAX_CONDITIONS_NUM] = { 0 };
     uint32_t timestamp;
-    uint16_t random = 0;    //TODO Davide: pick a random number (see udatapath/group_entry.c)
+    uint16_t random = random_uint16();
     bool has_state = false;
     bool has_condition[OFPSC_MAX_CONDITIONS_NUM] = { false };
     int i = 0;
     uint32_t current_global_state = OFP_GLOBAL_STATE_DEFAULT;
     gettimeofday(&tv,NULL);
-    timestamp = (1000000 * tv.tv_sec + tv.tv_usec)/1000; // timestamp in ms
+    timestamp = (1000000 * (long long)tv.tv_sec + tv.tv_usec)/1000; // timestamp in ms
 
     if(handle->valid)
         return;
@@ -491,10 +491,9 @@ packet_handle_std_validate(struct packet_handle_std *handle) {
         timestamp = *((uint32_t*) (f->value + EXP_ID_LEN));
     }
 
-    //Remove this to choose a random value at each validation
     HMAP_FOR_EACH_WITH_HASH(f, struct ofl_match_tlv,
-                    hmap_node, hash_int(OXM_EXP_RANDOM,0), &handle->match.match_fields){
-                    random = *((uint16_t*) (f->value + EXP_ID_LEN));
+        hmap_node, hash_int(OXM_EXP_RANDOM,0), &handle->match.match_fields){
+        random = *((uint16_t*) (f->value + EXP_ID_LEN));
     }
 #endif
     if (handle->match.dirty)
